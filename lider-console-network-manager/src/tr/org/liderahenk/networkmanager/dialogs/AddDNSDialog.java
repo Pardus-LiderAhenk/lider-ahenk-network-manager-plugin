@@ -18,6 +18,11 @@ import tr.org.liderahenk.liderconsole.core.dialogs.DefaultTaskDialog;
 import tr.org.liderahenk.liderconsole.core.exceptions.ValidationException;
 import tr.org.liderahenk.networkmanager.constants.NetworkManagerConstants;
 
+/**
+ * 
+ * @author <a href="mailto:mine.dogan@agem.com.tr">Mine Dogan</a>
+ *
+ */
 public class AddDNSDialog extends DefaultTaskDialog {
 	
 	private String title;

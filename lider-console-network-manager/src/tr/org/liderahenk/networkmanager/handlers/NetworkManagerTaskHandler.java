@@ -11,6 +11,6 @@ public class NetworkManagerTaskHandler extends SingleSelectionHandler {
 	public void executeWithDn(String dn) {
 		NetworkManagerTaskDialog dialog = new NetworkManagerTaskDialog(Display.getDefault().getActiveShell(), dn);
 		dialog.create();
-		dialog.open();
+		dialog.openWithEventBroker();
 	}
 }

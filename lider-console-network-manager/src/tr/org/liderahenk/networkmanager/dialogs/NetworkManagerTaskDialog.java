@@ -6,6 +6,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.type.TypeReference;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.swt.SWT;
@@ -27,6 +34,10 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Text;
+import org.osgi.service.event.Event;
+import org.osgi.service.event.EventHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import tr.org.liderahenk.networkmanager.constants.NetworkManagerConstants;
 import tr.org.liderahenk.networkmanager.i18n.Messages;
@@ -35,6 +46,8 @@ import tr.org.liderahenk.liderconsole.core.exceptions.ValidationException;
 import tr.org.liderahenk.liderconsole.core.ldap.enums.DNType;
 import tr.org.liderahenk.liderconsole.core.rest.requests.TaskRequest;
 import tr.org.liderahenk.liderconsole.core.rest.utils.TaskRestUtils;
+import tr.org.liderahenk.liderconsole.core.widgets.Notifier;
+import tr.org.liderahenk.liderconsole.core.xmpp.notifications.TaskStatusNotification;
 
 /**
  * 
@@ -43,12 +56,18 @@ import tr.org.liderahenk.liderconsole.core.rest.utils.TaskRestUtils;
  */
 public class NetworkManagerTaskDialog extends DefaultTaskDialog {
 	
+	private static final Logger logger = LoggerFactory.getLogger(NetworkManagerTaskDialog.class);
+	
 	private TabFolder tabFolder;
 	
 	private TableViewer viewerDNS;
-	private TableItem itemDNS;
 	private TableViewer viewerDomain;
-	private TableItem itemDomain;
+	private TableViewer viewerHosts;
+	private TableViewer viewerSettings;
+	
+	private Text txtInterfaces;
+	private Text txtHost;
+	private Text txtCurrentHostname;
 	
 	private List<String> columnTitles;
 	
@@ -58,11 +77,136 @@ public class NetworkManagerTaskDialog extends DefaultTaskDialog {
 	public NetworkManagerTaskDialog(Shell parentShell, String dn) {
 		super(parentShell, dn);
 		this.dn = dn;
+		subscribeEventHandler(eventHandler);
+		
+		getData("GET_NETWORK_INFORMATION");
 	}
 
 	@Override
 	public String createTitle() {
 		return Messages.getString("NETWORK_MANAGEMENT");
+	}
+	
+	@Override
+	protected void createButtonsForButtonBar(Composite parent) {
+		createButton(parent, IDialogConstants.CANCEL_ID, Messages.getString("EXIT"), true);
+	}
+	
+	private EventHandler eventHandler = new EventHandler() {
+		@Override
+		public void handleEvent(final Event event) {
+			Job job = new Job("TASK") {
+				@Override
+				protected IStatus run(IProgressMonitor monitor) {
+					monitor.beginTask("NETWORK_MANAGER", 100);
+					try {
+						TaskStatusNotification taskStatus = (TaskStatusNotification) event
+								.getProperty("org.eclipse.e4.data");
+						byte[] data = taskStatus.getResult().getResponseData();
+						final Map<String, Object> responseData = new ObjectMapper().readValue(data, 0, data.length,
+								new TypeReference<HashMap<String, Object>>() {
+						});
+						Display.getDefault().asyncExec(new Runnable() {
+
+							@Override
+							public void run() {
+								if (responseData != null && !responseData.isEmpty()) {
+									if (responseData.containsKey("interfaces") && responseData.containsKey("hosts")) {
+										String interfaces = (String) responseData.get("interfaces");
+										String hosts = (String) responseData.get("hosts");
+										
+										txtInterfaces.setText(interfaces);
+										txtHost.setText(hosts);
+									}
+									else if (responseData.containsKey("dns")) {
+										@SuppressWarnings("unchecked")
+										List<Map<String, Object>> dnsList = (List<Map<String, Object>>) responseData.get("dns");
+										
+										for (Map<String, Object> dnsMap : dnsList) {
+											String ip = (String) dnsMap.get("ip");
+											String isActive = (String) dnsMap.get("is_active");
+											
+											TableItem item = new TableItem(viewerDNS.getTable(), SWT.NONE);
+										    item.setText(0, ip);
+										    item.setText(1, isActive);
+										}
+									}
+									else if (responseData.containsKey("domain")) {
+										@SuppressWarnings("unchecked")
+										List<Map<String, Object>> domainList = (List<Map<String, Object>>) responseData.get("domain");
+										
+										for (Map<String, Object> domainMap : domainList) {
+											String domainName = (String) domainMap.get("domain_name");
+											
+											TableItem item = new TableItem(viewerDomain.getTable(), SWT.NONE);
+										    item.setText(0, domainName);
+										}
+									}
+									else if (responseData.containsKey("hosts")) {
+										@SuppressWarnings("unchecked")
+										List<Map<String, Object>> hostList = (List<Map<String, Object>>) responseData.get("hosts");
+										
+										for (Map<String, Object> hostMap : hostList) {
+											String ip = (String) hostMap.get("ip");
+											String hostname = (String) hostMap.get("hostname");
+											String isActive = (String) hostMap.get("is_active");
+											
+											TableItem item = new TableItem(viewerHosts.getTable(), SWT.NONE);
+										    item.setText(0, ip);
+										    item.setText(1, hostname);
+										    item.setText(2, isActive);
+										}
+									}
+									else if (responseData.containsKey("machine_hostname")) {
+										String machineHostname = (String) responseData.get("machine_hostname");
+										
+										txtCurrentHostname.setText(machineHostname);
+									}
+									else if (responseData.containsKey("settings")) {
+										@SuppressWarnings("unchecked")
+										List<Map<String, Object>> settingList = (List<Map<String, Object>>) responseData.get("settings");
+										
+										for (Map<String, Object> settingMap : settingList) {
+											String ip = (String) settingMap.get("ip");
+											String isActive = (String) settingMap.get("is_active");
+											String name = (String) settingMap.get("name");
+											String type = (String) settingMap.get("type");
+											
+											TableItem item = new TableItem(viewerSettings.getTable(), SWT.NONE);
+										    item.setText(0, ip);
+										    item.setText(1, isActive);
+										    item.setText(2, name);
+										    item.setText(3, type);
+										}
+									}
+								}
+							}
+						});
+					} catch (Exception e) {
+						logger.error(e.getMessage(), e);
+						Notifier.error("", Messages.getString("UNEXPECTED_ERROR_WHEN_GET_DATA"));
+					}
+					monitor.worked(100);
+					monitor.done();
+
+					return Status.OK_STATUS;
+				}
+			};
+
+			job.setUser(true);
+			job.schedule();
+		}
+	};
+	
+	public void getData(String commandId) {
+		try {
+			TaskRequest task = new TaskRequest(new ArrayList<String>(getDnSet()), DNType.AHENK, getPluginName(),
+					getPluginVersion(), commandId, null, null, null, new Date());
+			TaskRestUtils.execute(task);
+		} catch (Exception e1) {
+			logger.error(e1.getMessage(), e1);
+			Notifier.error(null, Messages.getString("ERROR_ON_EXECUTE"));
+		}
 	}
 
 	@Override
@@ -101,14 +245,15 @@ public class NetworkManagerTaskDialog extends DefaultTaskDialog {
 		data.widthHint = 300;
 		data.heightHint = 180;
 		
-		Text txtInterfaces = new Text(group, SWT.MULTI | SWT.BORDER | SWT.WRAP | SWT.V_SCROLL | SWT.H_SCROLL);
+		txtInterfaces = new Text(group, SWT.MULTI | SWT.BORDER | SWT.WRAP | SWT.V_SCROLL | SWT.H_SCROLL);
 		txtInterfaces.setLayoutData(data);
+		txtInterfaces.setEditable(false);
 		
-		Text txtHost = new Text(group, SWT.MULTI | SWT.BORDER | SWT.WRAP | SWT.V_SCROLL | SWT.H_SCROLL);
+		txtHost = new Text(group, SWT.MULTI | SWT.BORDER | SWT.WRAP | SWT.V_SCROLL | SWT.H_SCROLL);
 		txtHost.setLayoutData(data);
+		txtHost.setEditable(false);
 		
 		tabItem.setControl(group);
-		
 	}
 	
 	public void createDNSTab() {
@@ -133,7 +278,7 @@ public class NetworkManagerTaskDialog extends DefaultTaskDialog {
 				
 				viewerDNS.getTable().clearAll();
 				viewerDNS.getTable().setItemCount(0);
-//				getDNSData();
+				getData("GET_NETWORK_INFORMATION");
 			}
 			
 			@Override
@@ -158,12 +303,12 @@ public class NetworkManagerTaskDialog extends DefaultTaskDialog {
 				try {
 					TaskRestUtils.execute(task);
 				} catch (Exception e1) {
-					e1.printStackTrace();
+					logger.error(e1.getMessage(), e1);
 				}
 				 
 				viewerDNS.getTable().clearAll();
 				viewerDNS.getTable().setItemCount(0);
-//				getDNSData();
+				getData("GET_NETWORK_INFORMATION");
 			}
 			
 			@Override
@@ -207,7 +352,7 @@ public class NetworkManagerTaskDialog extends DefaultTaskDialog {
 				
 				viewerDomain.getTable().clearAll();
 				viewerDomain.getTable().setItemCount(0);
-//				getDomainData();
+				getData("GET_NETWORK_INFORMATION");
 			}
 			
 			@Override
@@ -232,12 +377,12 @@ public class NetworkManagerTaskDialog extends DefaultTaskDialog {
 				try {
 					TaskRestUtils.execute(task);
 				} catch (Exception e1) {
-					e1.printStackTrace();
+					logger.error(e1.getMessage(), e1);
 				}
 				 
 				viewerDomain.getTable().clearAll();
 				viewerDomain.getTable().setItemCount(0);
-//				getDomainData();
+				getData("GET_NETWORK_INFORMATION");
 			}
 			
 			@Override
@@ -265,13 +410,214 @@ public class NetworkManagerTaskDialog extends DefaultTaskDialog {
 	
 	public void createHostTab() {
 		
+		TabItem tabItem = new TabItem(tabFolder, SWT.NONE);
+		tabItem.setText(Messages.getString("HOSTS"));
+		
+		Group group = new Group(tabFolder, SWT.NONE);
+		group.setLayout(new GridLayout(2, false));
+		
+		Button btnAdd = new Button(group, SWT.PUSH);
+		btnAdd.setText(Messages.getString("ADD"));
+		btnAdd.setImage(new Image(Display.getCurrent(), this.getClass().getResourceAsStream("/icons/16/add.png")));
+		btnAdd.addSelectionListener(new SelectionListener() {
+			
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				AddHostDialog dialog = new AddHostDialog(Display.getDefault().getActiveShell(), dn);
+				dialog.create();
+				dialog.open();
+				
+				viewerHosts.getTable().clearAll();
+				viewerHosts.getTable().setItemCount(0);
+				getData("GET_NETWORK_INFORMATION");
+			}
+			
+			@Override
+			public void widgetDefaultSelected(SelectionEvent e) {
+			}
+		});
+		
+		Button btnDelete = new Button(group, SWT.PUSH);
+		btnDelete.setText(Messages.getString("DELETE"));
+		btnDelete.setImage(new Image(Display.getCurrent(), this.getClass().getResourceAsStream("/icons/16/delete.png")));
+		btnDelete.addSelectionListener(new SelectionListener() {
+			
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				TableItem item = viewerHosts.getTable().getItem(viewerHosts.getTable().getSelectionIndex());
+				
+				Map<String, Object> parameterMap = new HashMap<String, Object>();
+				parameterMap.put(NetworkManagerConstants.PARAMETERS.IP, item.getText(0));
+				parameterMap.put(NetworkManagerConstants.PARAMETERS.HOSTNAME, item.getText(1));
+				parameterMap.put(NetworkManagerConstants.PARAMETERS.IS_ACTIVE, item.getText(2));
+				
+				TaskRequest task = new TaskRequest(new ArrayList<String>(getDnSet()), DNType.AHENK, NetworkManagerConstants.PLUGIN_NAME,
+						NetworkManagerConstants.PLUGIN_VERSION, "DELETE_HOST", parameterMap, null, null, new Date());
+				try {
+					TaskRestUtils.execute(task);
+				} catch (Exception e1) {
+					logger.error(e1.getMessage(), e1);
+				}
+				 
+				viewerHosts.getTable().clearAll();
+				viewerHosts.getTable().setItemCount(0);
+				getData("GET_NETWORK_INFORMATION");
+			}
+			
+			@Override
+			public void widgetDefaultSelected(SelectionEvent e) {
+			}
+		});
+		
+		viewerHosts = new TableViewer(group, SWT.MULTI | SWT.H_SCROLL
+		        | SWT.V_SCROLL | SWT.FULL_SELECTION | SWT.BORDER);
+		
+		columnTitles = new ArrayList<String>();
+		columnTitles.add("IP");
+		columnTitles.add("HOSTNAME");
+		columnTitles.add("ACTIVE");
+		
+		createColumns(group, viewerHosts);
+		
+		Table tableDomain = viewerHosts.getTable();
+	    tableDomain.setHeaderVisible(true);
+	    tableDomain.setLinesVisible(true);
+	    
+	    // define layout for the viewer
+	    GridData gridData = new GridData(SWT.FILL, SWT.FILL, true, true, 2, 1);
+	    gridData.verticalAlignment = SWT.FILL;
+	    gridData.horizontalAlignment = SWT.FILL;
+	    viewerHosts.getControl().setLayoutData(gridData);
+	    
+	    tabItem.setControl(group);
+		
 	}
 	
 	public void createGeneralTab() {
 		
+		TabItem tabItem = new TabItem(tabFolder, SWT.NONE);
+		tabItem.setText(Messages.getString("GENERAL"));
+		
+		Group group = new Group(tabFolder, SWT.NONE);
+		group.setLayout(new GridLayout(2, false));
+		
+		Label lblCurrentHostname = new Label(group, SWT.NONE);
+		lblCurrentHostname.setText(Messages.getString("CURRENT_HOSTNAME"));
+		
+		txtCurrentHostname = new Text(group, SWT.BORDER);
+		txtCurrentHostname.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
+		
+		Button btnChange = new Button(group, SWT.PUSH);
+		btnChange.setText(Messages.getString("CHANGE"));
+		btnChange.setImage(new Image(Display.getCurrent(), this.getClass().getResourceAsStream("/icons/16/change.png")));
+		btnChange.addSelectionListener(new SelectionListener() {
+			
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				Map<String, Object> parameterMap = new HashMap<String, Object>();
+				parameterMap.put(NetworkManagerConstants.PARAMETERS.HOSTNAME, txtCurrentHostname.getText());
+				
+				TaskRequest task = new TaskRequest(new ArrayList<String>(getDnSet()), DNType.AHENK, NetworkManagerConstants.PLUGIN_NAME,
+						NetworkManagerConstants.PLUGIN_VERSION, "CHANGE_HOSTNAME", parameterMap, null, null, new Date());
+				try {
+					TaskRestUtils.execute(task);
+				} catch (Exception e1) {
+					logger.error(e1.getMessage(), e1);
+				}
+			}
+			
+			@Override
+			public void widgetDefaultSelected(SelectionEvent e) {
+			}
+		});
+		
+		tabItem.setControl(group);
 	}
 	
 	public void createSettingsTab() {
+		
+		TabItem tabItem = new TabItem(tabFolder, SWT.NONE);
+		tabItem.setText(Messages.getString("NETWORK_SETTINGS"));
+		
+		Group group = new Group(tabFolder, SWT.NONE);
+		group.setLayout(new GridLayout(2, false));
+		
+		Button btnAdd = new Button(group, SWT.PUSH);
+		btnAdd.setText(Messages.getString("ADD"));
+		btnAdd.setImage(new Image(Display.getCurrent(), this.getClass().getResourceAsStream("/icons/16/add.png")));
+		btnAdd.addSelectionListener(new SelectionListener() {
+			
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				AddNetworkDialog dialog = new AddNetworkDialog(Display.getDefault().getActiveShell(), dn);
+				dialog.create();
+				dialog.open();
+				
+				viewerSettings.getTable().clearAll();
+				viewerSettings.getTable().setItemCount(0);
+				getData("GET_NETWORK_INFORMATION");
+			}
+			
+			@Override
+			public void widgetDefaultSelected(SelectionEvent e) {
+			}
+		});
+		
+		Button btnDelete = new Button(group, SWT.PUSH);
+		btnDelete.setText(Messages.getString("DELETE"));
+		btnDelete.setImage(new Image(Display.getCurrent(), this.getClass().getResourceAsStream("/icons/16/delete.png")));
+		btnDelete.addSelectionListener(new SelectionListener() {
+			
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				TableItem item = viewerSettings.getTable().getItem(viewerSettings.getTable().getSelectionIndex());
+				
+				Map<String, Object> parameterMap = new HashMap<String, Object>();
+				parameterMap.put(NetworkManagerConstants.PARAMETERS.IP, item.getText(0));
+				parameterMap.put(NetworkManagerConstants.PARAMETERS.IS_ACTIVE, item.getText(1));
+				parameterMap.put(NetworkManagerConstants.PARAMETERS.NAME, item.getText(2));
+				parameterMap.put(NetworkManagerConstants.PARAMETERS.TYPE, item.getText(3));
+				
+				TaskRequest task = new TaskRequest(new ArrayList<String>(getDnSet()), DNType.AHENK, NetworkManagerConstants.PLUGIN_NAME,
+						NetworkManagerConstants.PLUGIN_VERSION, "DELETE_NETWORK", parameterMap, null, null, new Date());
+				try {
+					TaskRestUtils.execute(task);
+				} catch (Exception e1) {
+					logger.error(e1.getMessage(), e1);
+				}
+				 
+				viewerSettings.getTable().clearAll();
+				viewerSettings.getTable().setItemCount(0);
+				getData("GET_NETWORK_INFORMATION");
+			}
+			
+			@Override
+			public void widgetDefaultSelected(SelectionEvent e) {
+			}
+		});
+		
+		viewerSettings = new TableViewer(group, SWT.MULTI | SWT.H_SCROLL
+		        | SWT.V_SCROLL | SWT.FULL_SELECTION | SWT.BORDER);
+		
+		columnTitles = new ArrayList<String>();
+		columnTitles.add("IP");
+		columnTitles.add("ACTIVE");
+		columnTitles.add("NAME");
+		columnTitles.add("TYPE");
+		
+		createColumns(group, viewerSettings);
+		
+		Table tableDomain = viewerSettings.getTable();
+	    tableDomain.setHeaderVisible(true);
+	    tableDomain.setLinesVisible(true);
+	    
+	    // define layout for the viewer
+	    GridData gridData = new GridData(SWT.FILL, SWT.FILL, true, true, 2, 1);
+	    gridData.verticalAlignment = SWT.FILL;
+	    gridData.horizontalAlignment = SWT.FILL;
+	    viewerSettings.getControl().setLayoutData(gridData);
+		
+		tabItem.setControl(group);
 		
 	}
 	
@@ -297,29 +643,26 @@ public class NetworkManagerTaskDialog extends DefaultTaskDialog {
 
 	@Override
 	public void validateBeforeExecution() throws ValidationException {
-		// TODO triggered before task execution
 	}
 	
 	@Override
 	public Map<String, Object> getParameterMap() {
-		// TODO custom parameter map
-		return new HashMap<String, Object>();
+		return null;
 	}
 
 	@Override
 	public String getCommandId() {
-		// TODO command id which is used to match tasks with ICommand class in the corresponding Lider plugin
-		return "SAMPLE_COMMAND1";
+		return null;
 	}
 
 	@Override
 	public String getPluginName() {
-		return "network-manager";
+		return NetworkManagerConstants.PLUGIN_NAME;
 	}
 
 	@Override
 	public String getPluginVersion() {
-		return "1.0.0";
+		return NetworkManagerConstants.PLUGIN_VERSION;
 	}
 	
 }

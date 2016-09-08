@@ -10,6 +10,9 @@ public class NetworkManagerConstants {
 		public static final String IP = "ip";
 		public static final String DOMAIN = "domain";
 		public static final String IS_ACTIVE = "is_active";
+		public static final String HOSTNAME = "hostname";
+		public static final String TYPE = "type";
+		public static final String NAME = "name";
 	}
 	
 }
