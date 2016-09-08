@@ -3,7 +3,6 @@ package tr.org.liderahenk.networkmanager.dialogs;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.directory.studio.ldapbrowser.ui.actions.Messages;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -17,6 +16,7 @@ import org.eclipse.swt.widgets.Text;
 import tr.org.liderahenk.liderconsole.core.dialogs.DefaultTaskDialog;
 import tr.org.liderahenk.liderconsole.core.exceptions.ValidationException;
 import tr.org.liderahenk.networkmanager.constants.NetworkManagerConstants;
+import tr.org.liderahenk.networkmanager.i18n.Messages;
 
 /**
  * 
