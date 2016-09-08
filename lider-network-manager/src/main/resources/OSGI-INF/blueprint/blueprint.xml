@@ -29,15 +29,65 @@
 	</bean>
 
 	<!-- ICommand implementation is used to process a task execution -->
-	<service ref="NetworkManagerCommand" interface="tr.org.liderahenk.lider.core.api.plugin.ICommand" />
-	<bean id="NetworkManagerCommand" class="tr.org.liderahenk.networkmanager.commands.NetworkManagerCommand">
+	<service ref="AddHostCommand" interface="tr.org.liderahenk.lider.core.api.plugin.ICommand" />
+	<bean id="AddHostCommand" class="tr.org.liderahenk.networkmanager.commands.AddHostCommand">
 		<property name="resultFactory" ref="resultFactory" />
 		<property name="pluginInfo" ref="pluginInfoImpl" />
-		<property name="logService" ref="logService" />
-		<property name="pluginDbService" ref="pluginDbService" />
+	</bean>
+	
+	<service ref="AddNetworkCommand" interface="tr.org.liderahenk.lider.core.api.plugin.ICommand" />
+	<bean id="AddNetworkCommand" class="tr.org.liderahenk.networkmanager.commands.AddNetworkCommand">
+		<property name="resultFactory" ref="resultFactory" />
+		<property name="pluginInfo" ref="pluginInfoImpl" />
+	</bean>
+	
+	<service ref="ChangeHostnameCommand" interface="tr.org.liderahenk.lider.core.api.plugin.ICommand" />
+	<bean id="ChangeHostnameCommand" class="tr.org.liderahenk.networkmanager.commands.ChangeHostnameCommand">
+		<property name="resultFactory" ref="resultFactory" />
+		<property name="pluginInfo" ref="pluginInfoImpl" />
+	</bean>
+	
+	<service ref="DeleteDNSCommand" interface="tr.org.liderahenk.lider.core.api.plugin.ICommand" />
+	<bean id="DeleteDNSCommand" class="tr.org.liderahenk.networkmanager.commands.DeleteDNSCommand">
+		<property name="resultFactory" ref="resultFactory" />
+		<property name="pluginInfo" ref="pluginInfoImpl" />
+	</bean>
+	
+	<service ref="DeleteDomainCommand" interface="tr.org.liderahenk.lider.core.api.plugin.ICommand" />
+	<bean id="DeleteDomainCommand" class="tr.org.liderahenk.networkmanager.commands.DeleteDomainCommand">
+		<property name="resultFactory" ref="resultFactory" />
+		<property name="pluginInfo" ref="pluginInfoImpl" />
+	</bean>
+	
+	<service ref="DeleteHostCommand" interface="tr.org.liderahenk.lider.core.api.plugin.ICommand" />
+	<bean id="DeleteHostCommand" class="tr.org.liderahenk.networkmanager.commands.DeleteHostCommand">
+		<property name="resultFactory" ref="resultFactory" />
+		<property name="pluginInfo" ref="pluginInfoImpl" />
+	</bean>
+	
+	<service ref="DeleteNetworkCommand" interface="tr.org.liderahenk.lider.core.api.plugin.ICommand" />
+	<bean id="DeleteNetworkCommand" class="tr.org.liderahenk.networkmanager.commands.DeleteNetworkCommand">
+		<property name="resultFactory" ref="resultFactory" />
+		<property name="pluginInfo" ref="pluginInfoImpl" />
+	</bean>
+	
+	<service ref="GetNetworkInformationCommand" interface="tr.org.liderahenk.lider.core.api.plugin.ICommand" />
+	<bean id="GetNetworkInformationCommand" class="tr.org.liderahenk.networkmanager.commands.GetNetworkInformationCommand">
+		<property name="resultFactory" ref="resultFactory" />
+		<property name="pluginInfo" ref="pluginInfoImpl" />
+	</bean>
+	
+	<service ref="SetDNSCommand" interface="tr.org.liderahenk.lider.core.api.plugin.ICommand" />
+	<bean id="SetDNSCommand" class="tr.org.liderahenk.networkmanager.commands.SetDNSCommand">
+		<property name="resultFactory" ref="resultFactory" />
+		<property name="pluginInfo" ref="pluginInfoImpl" />
+	</bean>
+	
+	<service ref="SetDomainCommand" interface="tr.org.liderahenk.lider.core.api.plugin.ICommand" />
+	<bean id="SetDomainCommand" class="tr.org.liderahenk.networkmanager.commands.SetDomainCommand">
+		<property name="resultFactory" ref="resultFactory" />
+		<property name="pluginInfo" ref="pluginInfoImpl" />
 	</bean>
 
-	<reference id="pluginDbService" interface="tr.org.liderahenk.lider.core.api.persistence.IPluginDbService" />
-	<reference id="logService" interface="tr.org.liderahenk.lider.core.api.log.IOperationLogService" />
 	<reference id="resultFactory" interface="tr.org.liderahenk.lider.core.api.service.ICommandResultFactory" />
 </blueprint>
