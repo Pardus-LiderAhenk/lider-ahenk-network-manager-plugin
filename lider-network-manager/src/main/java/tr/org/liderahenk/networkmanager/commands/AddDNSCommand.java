@@ -9,7 +9,7 @@ import tr.org.liderahenk.lider.core.api.service.ICommandResult;
 import tr.org.liderahenk.lider.core.api.service.ICommandResultFactory;
 import tr.org.liderahenk.lider.core.api.service.enums.CommandResultStatus;
 
-public class SetDNSCommand implements ICommand {
+public class AddDNSCommand implements ICommand {
 
 	private ICommandResultFactory resultFactory;
 	private IPluginInfo pluginInfo;
@@ -26,7 +26,7 @@ public class SetDNSCommand implements ICommand {
 
 	@Override
 	public String getCommandId() {
-		return "SET_DNS";
+		return "ADD_DNS";
 	}
 
 	@Override

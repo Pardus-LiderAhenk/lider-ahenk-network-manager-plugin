@@ -9,7 +9,7 @@ import tr.org.liderahenk.lider.core.api.service.ICommandResult;
 import tr.org.liderahenk.lider.core.api.service.ICommandResultFactory;
 import tr.org.liderahenk.lider.core.api.service.enums.CommandResultStatus;
 
-public class SetDomainCommand implements ICommand {
+public class AddDomainCommand implements ICommand {
 
 	private ICommandResultFactory resultFactory;
 	private IPluginInfo pluginInfo;
@@ -26,7 +26,7 @@ public class SetDomainCommand implements ICommand {
 
 	@Override
 	public String getCommandId() {
-		return "SET_DOMAIN";
+		return "ADD_DOMAIN";
 	}
 
 	@Override

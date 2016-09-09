@@ -27,6 +27,18 @@
 		<property name="usesFileTransfer" value="${plugin.uses.file.transfer}" />
 		<property name="xbased" value="${plugin.x.based}" />
 	</bean>
+	
+	<service ref="AddDNSCommand" interface="tr.org.liderahenk.lider.core.api.plugin.ICommand" />
+	<bean id="AddDNSCommand" class="tr.org.liderahenk.networkmanager.commands.AddDNSCommand">
+		<property name="resultFactory" ref="resultFactory" />
+		<property name="pluginInfo" ref="pluginInfoImpl" />
+	</bean>
+	
+	<service ref="AddDomainCommand" interface="tr.org.liderahenk.lider.core.api.plugin.ICommand" />
+	<bean id="AddDomainCommand" class="tr.org.liderahenk.networkmanager.commands.AddDomainCommand">
+		<property name="resultFactory" ref="resultFactory" />
+		<property name="pluginInfo" ref="pluginInfoImpl" />
+	</bean>
 
 	<!-- ICommand implementation is used to process a task execution -->
 	<service ref="AddHostCommand" interface="tr.org.liderahenk.lider.core.api.plugin.ICommand" />
@@ -77,17 +89,5 @@
 		<property name="pluginInfo" ref="pluginInfoImpl" />
 	</bean>
 	
-	<service ref="SetDNSCommand" interface="tr.org.liderahenk.lider.core.api.plugin.ICommand" />
-	<bean id="SetDNSCommand" class="tr.org.liderahenk.networkmanager.commands.SetDNSCommand">
-		<property name="resultFactory" ref="resultFactory" />
-		<property name="pluginInfo" ref="pluginInfoImpl" />
-	</bean>
-	
-	<service ref="SetDomainCommand" interface="tr.org.liderahenk.lider.core.api.plugin.ICommand" />
-	<bean id="SetDomainCommand" class="tr.org.liderahenk.networkmanager.commands.SetDomainCommand">
-		<property name="resultFactory" ref="resultFactory" />
-		<property name="pluginInfo" ref="pluginInfoImpl" />
-	</bean>
-
 	<reference id="resultFactory" interface="tr.org.liderahenk.lider.core.api.service.ICommandResultFactory" />
 </blueprint>
