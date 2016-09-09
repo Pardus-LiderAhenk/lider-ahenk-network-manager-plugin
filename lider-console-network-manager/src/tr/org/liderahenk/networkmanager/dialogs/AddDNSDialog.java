@@ -54,7 +54,7 @@ public class AddDNSDialog extends DefaultTaskDialog {
 		composite.setLayout(new GridLayout(2, false));
 		composite.setLayoutData(gridData);
 		
-		if (commandId.equals("SET_DNS")) {
+		if (commandId.equals("ADD_DNS")) {
 			Label lblIp = new Label(composite, SWT.NONE);
 			lblIp.setText(Messages.getString("IP"));
 			
@@ -65,7 +65,7 @@ public class AddDNSDialog extends DefaultTaskDialog {
 			btnActive.setText(Messages.getString("ACTIVE"));
 			btnActive.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 2, 1));
 		}
-		else if (commandId.equals("SET_DOMAIN")) {
+		else if (commandId.equals("ADD_DOMAIN")) {
 			Label lblDomain = new Label(composite, SWT.NONE);
 			lblDomain.setText(Messages.getString("DOMAIN"));
 			
@@ -78,12 +78,12 @@ public class AddDNSDialog extends DefaultTaskDialog {
 
 	@Override
 	public void validateBeforeExecution() throws ValidationException {
-		if (commandId.equals("SET_DNS")) {
+		if (commandId.equals("ADD_DNS")) {
 			if (txtIp.getText() == null || txtIp.getText().replaceAll("\\s+","").isEmpty()) {
 				throw new ValidationException(Messages.getString("FILL_IP_FIELD"));
 			}
 		}
-		else if (commandId.equals("SET_DOMAIN")) {
+		else if (commandId.equals("ADD_DOMAIN")) {
 			if (txtDomain.getText() == null || txtDomain.getText().replaceAll("\\s+","").isEmpty()) {
 				throw new ValidationException(Messages.getString("FILL_DOMAIN_FIELD"));
 			}
@@ -93,11 +93,11 @@ public class AddDNSDialog extends DefaultTaskDialog {
 	@Override
 	public Map<String, Object> getParameterMap() {
 		Map<String, Object> parameterMap = new HashMap<String, Object>();
-		if (commandId.equals("SET_DNS")) {
+		if (commandId.equals("ADD_DNS")) {
 			parameterMap.put(NetworkManagerConstants.PARAMETERS.IP, txtIp.getText());
 			parameterMap.put(NetworkManagerConstants.PARAMETERS.IS_ACTIVE, btnActive.getSelection());
 		}
-		else if (commandId.equals("SET_DOMAIN")) {
+		else if (commandId.equals("ADD_DOMAIN")) {
 			parameterMap.put(NetworkManagerConstants.PARAMETERS.DOMAIN, txtDomain.getText());
 		}
 		return parameterMap;

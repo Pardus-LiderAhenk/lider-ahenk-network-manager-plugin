@@ -60,6 +60,7 @@ public class NetworkManagerTaskDialog extends DefaultTaskDialog {
 	
 	private TabFolder tabFolder;
 	
+	private TableItem item;
 	private TableViewer viewerDNS;
 	private TableViewer viewerDomain;
 	private TableViewer viewerHosts;
@@ -117,67 +118,68 @@ public class NetworkManagerTaskDialog extends DefaultTaskDialog {
 										
 										txtInterfaces.setText(interfaces);
 										txtHost.setText(hosts);
-									}
-									else if (responseData.containsKey("dns")) {
-										@SuppressWarnings("unchecked")
-										List<Map<String, Object>> dnsList = (List<Map<String, Object>>) responseData.get("dns");
 										
-										for (Map<String, Object> dnsMap : dnsList) {
-											String ip = (String) dnsMap.get("ip");
-											String isActive = (String) dnsMap.get("is_active");
+										String[] lines = hosts.split("\n");
+										
+										for (String line : lines) {
+											if (!line.isEmpty() && Character.isDigit(line.charAt(0))) {
+												String[] hostnames = line.split("\\s+");
+												
+												TableItem item = new TableItem(viewerHosts.getTable(), SWT.NONE);
+											    item.setText(0, hostnames[0]);
+											    item.setText(1, hostnames[1]);
+//											    item.setText(2, isActive); TODO is active?
+											}
+										}
+										
+										lines = interfaces.split("\n");
+										for (String line : lines) {
 											
-											TableItem item = new TableItem(viewerDNS.getTable(), SWT.NONE);
-										    item.setText(0, ip);
-										    item.setText(1, isActive);
+											if (line.contains("iface")) {
+												String[] items = line.split("\\s+");
+												
+												item = new TableItem(viewerSettings.getTable(), SWT.NONE);
+												
+//											    item.setText(1, isActive); TODO is active?
+											    item.setText(2, items[1]);
+											    item.setText(3, items[3]);
+											}
+											if (line.contains("address")) {
+												String[] items = line.split(" ");
+												
+												item.setText(0, items[1]);
+											}
 										}
 									}
-									else if (responseData.containsKey("domain")) {
-										@SuppressWarnings("unchecked")
-										List<Map<String, Object>> domainList = (List<Map<String, Object>>) responseData.get("domain");
+									if (responseData.containsKey("dns")) {
+										String dns = (String) responseData.get("dns");
 										
-										for (Map<String, Object> domainMap : domainList) {
-											String domainName = (String) domainMap.get("domain_name");
-											
-											TableItem item = new TableItem(viewerDomain.getTable(), SWT.NONE);
-										    item.setText(0, domainName);
+										String[] lines = dns.split("\n");
+										
+										for (String line : lines) {
+											if (line.contains("search")) {
+												String[] domains = line.split("\\s+");
+												for (int i = 1; i < domains.length; i++) {
+													
+													TableItem item = new TableItem(viewerDomain.getTable(), SWT.NONE);
+												    item.setText(0, domains[i]);
+												}
+											}
+											else if (line.contains("nameserver")) {
+												String[] dnsHosts = line.split("\\s+");
+												for (int i = 1; i < dnsHosts.length; i++) {
+													
+													TableItem item = new TableItem(viewerDNS.getTable(), SWT.NONE);
+												    item.setText(0, dnsHosts[i]);
+//												    item.setText(1, isActive); TODO is active?
+												}
+											}
 										}
 									}
-									else if (responseData.containsKey("hosts")) {
-										@SuppressWarnings("unchecked")
-										List<Map<String, Object>> hostList = (List<Map<String, Object>>) responseData.get("hosts");
-										
-										for (Map<String, Object> hostMap : hostList) {
-											String ip = (String) hostMap.get("ip");
-											String hostname = (String) hostMap.get("hostname");
-											String isActive = (String) hostMap.get("is_active");
-											
-											TableItem item = new TableItem(viewerHosts.getTable(), SWT.NONE);
-										    item.setText(0, ip);
-										    item.setText(1, hostname);
-										    item.setText(2, isActive);
-										}
-									}
-									else if (responseData.containsKey("machine_hostname")) {
+									if (responseData.containsKey("machine_hostname")) {
 										String machineHostname = (String) responseData.get("machine_hostname");
 										
 										txtCurrentHostname.setText(machineHostname);
-									}
-									else if (responseData.containsKey("settings")) {
-										@SuppressWarnings("unchecked")
-										List<Map<String, Object>> settingList = (List<Map<String, Object>>) responseData.get("settings");
-										
-										for (Map<String, Object> settingMap : settingList) {
-											String ip = (String) settingMap.get("ip");
-											String isActive = (String) settingMap.get("is_active");
-											String name = (String) settingMap.get("name");
-											String type = (String) settingMap.get("type");
-											
-											TableItem item = new TableItem(viewerSettings.getTable(), SWT.NONE);
-										    item.setText(0, ip);
-										    item.setText(1, isActive);
-										    item.setText(2, name);
-										    item.setText(3, type);
-										}
 									}
 								}
 							}
@@ -272,7 +274,7 @@ public class NetworkManagerTaskDialog extends DefaultTaskDialog {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				AddDNSDialog dialog = new AddDNSDialog(Display.getDefault().getActiveShell(), dn, 
-						"NEW_DNS", "SET_DNS");
+						"NEW_DNS", "ADD_DNS");
 				dialog.create();
 				dialog.open();
 				
@@ -346,7 +348,7 @@ public class NetworkManagerTaskDialog extends DefaultTaskDialog {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				AddDNSDialog dialog = new AddDNSDialog(Display.getDefault().getActiveShell(), dn, 
-						"NEW_DOMAIN", "SET_DOMAIN");
+						"NEW_DOMAIN", "ADD_DOMAIN");
 				dialog.create();
 				dialog.open();
 				

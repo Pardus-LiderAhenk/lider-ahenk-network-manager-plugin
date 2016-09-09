@@ -69,7 +69,7 @@ public class AddNetworkDialog extends DefaultTaskDialog {
 			
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				if (cmbType.getText().equals("STATIC")) {
+				if (!cmbType.getText().equals("STATIC")) {
 					lblIp.setEnabled(false);
 					txtIp.setEnabled(false);
 				}
