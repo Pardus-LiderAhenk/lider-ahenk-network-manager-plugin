@@ -122,13 +122,25 @@ public class NetworkManagerTaskDialog extends DefaultTaskDialog {
 										String[] lines = hosts.split("\n");
 										
 										for (String line : lines) {
-											if (!line.isEmpty() && Character.isDigit(line.charAt(0))) {
+											if (!line.isEmpty()) {
 												String[] hostnames = line.split("\\s+");
 												
-												TableItem item = new TableItem(viewerHosts.getTable(), SWT.NONE);
-											    item.setText(0, hostnames[0]);
-											    item.setText(1, hostnames[1]);
-//											    item.setText(2, isActive); TODO is active?
+												if (hostnames[0].matches("(\\d+\\.?)+")) {
+													TableItem item = new TableItem(viewerHosts.getTable(), SWT.NONE);
+												    item.setText(0, hostnames[0]);
+												    item.setText(1, hostnames[1]);
+												    item.setText(2, Messages.getString("YES"));
+												}
+												else if (hostnames[0].matches("#(\\d+\\.?)+")) {
+													TableItem item = new TableItem(viewerHosts.getTable(), SWT.NONE);
+													
+													StringBuilder sb = new StringBuilder(hostnames[0]);
+													sb.deleteCharAt(0);
+													
+												    item.setText(0, sb.toString());
+												    item.setText(1, hostnames[1]);
+												    item.setText(2, Messages.getString("NO"));
+												}
 											}
 										}
 										
@@ -140,14 +152,27 @@ public class NetworkManagerTaskDialog extends DefaultTaskDialog {
 												
 												item = new TableItem(viewerSettings.getTable(), SWT.NONE);
 												
-//											    item.setText(1, isActive); TODO is active?
 											    item.setText(2, items[1]);
 											    item.setText(3, items[3]);
+											    
+											    if (line.startsWith("#")) {
+													item.setText(1, Messages.getString("NO"));
+												}
+												else {
+													item.setText(1, Messages.getString("YES"));
+												}
 											}
 											if (line.contains("address")) {
 												String[] items = line.split(" ");
 												
 												item.setText(0, items[1]);
+												
+												if (line.startsWith("#")) {
+													item.setText(1, Messages.getString("NO"));
+												}
+												else {
+													item.setText(1, Messages.getString("YES"));
+												}
 											}
 										}
 									}
@@ -171,7 +196,13 @@ public class NetworkManagerTaskDialog extends DefaultTaskDialog {
 													
 													TableItem item = new TableItem(viewerDNS.getTable(), SWT.NONE);
 												    item.setText(0, dnsHosts[i]);
-//												    item.setText(1, isActive); TODO is active?
+												    
+												    if (line.startsWith("#")) {
+												    	item.setText(1, Messages.getString("NO"));
+													}
+												    else {
+												    	item.setText(1, Messages.getString("YES"));
+												    }
 												}
 											}
 										}
@@ -201,6 +232,20 @@ public class NetworkManagerTaskDialog extends DefaultTaskDialog {
 	};
 	
 	public void getData(String commandId) {
+		if (viewerDNS != null && viewerDomain != null && viewerHosts != null && viewerSettings != null) {
+			viewerDNS.getTable().clearAll();
+			viewerDNS.getTable().setItemCount(0);
+			
+			viewerDomain.getTable().clearAll();
+			viewerDomain.getTable().setItemCount(0);
+			
+			viewerHosts.getTable().clearAll();
+			viewerHosts.getTable().setItemCount(0);
+			
+			viewerSettings.getTable().clearAll();
+			viewerSettings.getTable().setItemCount(0);
+		}
+		
 		try {
 			TaskRequest task = new TaskRequest(new ArrayList<String>(getDnSet()), DNType.AHENK, getPluginName(),
 					getPluginVersion(), commandId, null, null, null, new Date());
@@ -278,8 +323,6 @@ public class NetworkManagerTaskDialog extends DefaultTaskDialog {
 				dialog.create();
 				dialog.open();
 				
-				viewerDNS.getTable().clearAll();
-				viewerDNS.getTable().setItemCount(0);
 				getData("GET_NETWORK_INFORMATION");
 			}
 			
@@ -308,8 +351,6 @@ public class NetworkManagerTaskDialog extends DefaultTaskDialog {
 					logger.error(e1.getMessage(), e1);
 				}
 				 
-				viewerDNS.getTable().clearAll();
-				viewerDNS.getTable().setItemCount(0);
 				getData("GET_NETWORK_INFORMATION");
 			}
 			
@@ -352,8 +393,6 @@ public class NetworkManagerTaskDialog extends DefaultTaskDialog {
 				dialog.create();
 				dialog.open();
 				
-				viewerDomain.getTable().clearAll();
-				viewerDomain.getTable().setItemCount(0);
 				getData("GET_NETWORK_INFORMATION");
 			}
 			
@@ -382,8 +421,6 @@ public class NetworkManagerTaskDialog extends DefaultTaskDialog {
 					logger.error(e1.getMessage(), e1);
 				}
 				 
-				viewerDomain.getTable().clearAll();
-				viewerDomain.getTable().setItemCount(0);
 				getData("GET_NETWORK_INFORMATION");
 			}
 			
@@ -429,8 +466,6 @@ public class NetworkManagerTaskDialog extends DefaultTaskDialog {
 				dialog.create();
 				dialog.open();
 				
-				viewerHosts.getTable().clearAll();
-				viewerHosts.getTable().setItemCount(0);
 				getData("GET_NETWORK_INFORMATION");
 			}
 			
@@ -461,8 +496,6 @@ public class NetworkManagerTaskDialog extends DefaultTaskDialog {
 					logger.error(e1.getMessage(), e1);
 				}
 				 
-				viewerHosts.getTable().clearAll();
-				viewerHosts.getTable().setItemCount(0);
 				getData("GET_NETWORK_INFORMATION");
 			}
 			
@@ -555,8 +588,6 @@ public class NetworkManagerTaskDialog extends DefaultTaskDialog {
 				dialog.create();
 				dialog.open();
 				
-				viewerSettings.getTable().clearAll();
-				viewerSettings.getTable().setItemCount(0);
 				getData("GET_NETWORK_INFORMATION");
 			}
 			
@@ -588,8 +619,6 @@ public class NetworkManagerTaskDialog extends DefaultTaskDialog {
 					logger.error(e1.getMessage(), e1);
 				}
 				 
-				viewerSettings.getTable().clearAll();
-				viewerSettings.getTable().setItemCount(0);
 				getData("GET_NETWORK_INFORMATION");
 			}
 			
@@ -602,7 +631,7 @@ public class NetworkManagerTaskDialog extends DefaultTaskDialog {
 		        | SWT.V_SCROLL | SWT.FULL_SELECTION | SWT.BORDER);
 		
 		columnTitles = new ArrayList<String>();
-		columnTitles.add("IP");
+		columnTitles.add("ADDRESS");
 		columnTitles.add("ACTIVE");
 		columnTitles.add("NAME");
 		columnTitles.add("TYPE");

@@ -31,7 +31,11 @@ public class AddNetworkDialog extends DefaultTaskDialog {
 	private Combo cmbType;
 	private Text txtName;
 	private Label lblIp;
+	private Label lblNetmask;
+	private Label lblGateway;
 	private Text txtIp;
+	private Text txtNetmask;
+	private Text txtGateway;
 	private Button btnActive;
 	
 	private final String[] arrTypes = new String[] { "STATIC", "LOOPBACK", "DHCP" };
@@ -72,10 +76,22 @@ public class AddNetworkDialog extends DefaultTaskDialog {
 				if (!cmbType.getText().equals("STATIC")) {
 					lblIp.setEnabled(false);
 					txtIp.setEnabled(false);
+					
+					lblNetmask.setEnabled(false);
+					txtNetmask.setEnabled(false);
+					
+					lblGateway.setEnabled(false);
+					txtGateway.setEnabled(false);
 				}
 				else {
 					lblIp.setEnabled(true);
 					txtIp.setEnabled(true);
+					
+					lblNetmask.setEnabled(true);
+					txtNetmask.setEnabled(true);
+					
+					lblGateway.setEnabled(true);
+					txtGateway.setEnabled(true);
 				}
 			}
 			
@@ -91,10 +107,22 @@ public class AddNetworkDialog extends DefaultTaskDialog {
 		txtName.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
 		
 		lblIp = new Label(composite, SWT.NONE);
-		lblIp.setText(Messages.getString("IP"));
+		lblIp.setText(Messages.getString("ADDRESS"));
 		
 		txtIp = new Text(composite, SWT.BORDER);
 		txtIp.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
+		
+		lblNetmask = new Label(composite, SWT.NONE);
+		lblNetmask.setText(Messages.getString("NETMASK"));
+		
+		txtNetmask = new Text(composite, SWT.BORDER);
+		txtNetmask.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
+		
+		lblGateway = new Label(composite, SWT.NONE);
+		lblGateway.setText(Messages.getString("GATEWAY"));
+		
+		txtGateway = new Text(composite, SWT.BORDER);
+		txtGateway.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
 		
 		btnActive = new Button(composite, SWT.CHECK);
 		btnActive.setText(Messages.getString("ACTIVE"));
@@ -112,8 +140,16 @@ public class AddNetworkDialog extends DefaultTaskDialog {
 		if (txtName.getText() == null || txtName.getText().replaceAll("\\s+","").isEmpty()) {
 			throw new ValidationException(Messages.getString("FILL_NAME_FIELD"));
 		}
-		if (!cmbType.getText().equals("STATIC")) {
-			throw new ValidationException(Messages.getString("FILL_IP_FIELD"));
+		if (cmbType.getText().equals("STATIC")) {
+			if (txtIp.getText().replaceAll("\\s+","").isEmpty()) {
+				throw new ValidationException(Messages.getString("FILL_IP_FIELD"));
+			}
+			if (txtNetmask.getText().replaceAll("\\s+","").isEmpty()) {
+				throw new ValidationException(Messages.getString("FILL_NETMASK_FIELD"));
+			}
+			if (txtGateway.getText().replaceAll("\\s+","").isEmpty()) {
+				throw new ValidationException(Messages.getString("FILL_GATEWAY_FIELD"));
+			}
 		}
 	}
 
@@ -122,8 +158,10 @@ public class AddNetworkDialog extends DefaultTaskDialog {
 		Map<String, Object> parameterMap = new HashMap<String, Object>();
 		parameterMap.put(NetworkManagerConstants.PARAMETERS.TYPE, cmbType.getText());
 		
-		if (!cmbType.getText().equals("STATIC")) {
+		if (cmbType.getText().equals("STATIC")) {
 			parameterMap.put(NetworkManagerConstants.PARAMETERS.IP, txtIp.getText());
+			parameterMap.put(NetworkManagerConstants.PARAMETERS.NETMASK, txtNetmask.getText());
+			parameterMap.put(NetworkManagerConstants.PARAMETERS.GATEWAY, txtGateway.getText());
 		}
 		
 		parameterMap.put(NetworkManagerConstants.PARAMETERS.NAME, txtName.getText());

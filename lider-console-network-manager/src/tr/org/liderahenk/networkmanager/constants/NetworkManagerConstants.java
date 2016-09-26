@@ -13,6 +13,8 @@ public class NetworkManagerConstants {
 		public static final String HOSTNAME = "hostname";
 		public static final String TYPE = "type";
 		public static final String NAME = "name";
+		public static final String NETMASK = "netmask";
+		public static final String GATEWAY = "gateway";
 	}
 	
 }
