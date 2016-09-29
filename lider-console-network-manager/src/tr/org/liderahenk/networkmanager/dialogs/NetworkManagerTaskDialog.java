@@ -165,7 +165,12 @@ public class NetworkManagerTaskDialog extends DefaultTaskDialog {
 											if (line.contains("address")) {
 												String[] items = line.split(" ");
 												
-												item.setText(0, items[1]);
+												if (!items[1].contains("address")) {
+													item.setText(0, items[1]);
+												}
+												else {
+													item.setText(0, items[2]);
+												}
 												
 												if (line.startsWith("#")) {
 													item.setText(1, Messages.getString("NO"));
@@ -342,6 +347,7 @@ public class NetworkManagerTaskDialog extends DefaultTaskDialog {
 				
 				Map<String, Object> parameterMap = new HashMap<String, Object>();
 				parameterMap.put(NetworkManagerConstants.PARAMETERS.IP, item.getText(0));
+				parameterMap.put(NetworkManagerConstants.PARAMETERS.IS_ACTIVE, item.getText(1).equals(Messages.getString("YES")) ? true : false);
 				
 				TaskRequest task = new TaskRequest(new ArrayList<String>(getDnSet()), DNType.AHENK, NetworkManagerConstants.PLUGIN_NAME,
 						NetworkManagerConstants.PLUGIN_VERSION, "DELETE_DNS", parameterMap, null, null, new Date());
@@ -486,7 +492,7 @@ public class NetworkManagerTaskDialog extends DefaultTaskDialog {
 				Map<String, Object> parameterMap = new HashMap<String, Object>();
 				parameterMap.put(NetworkManagerConstants.PARAMETERS.IP, item.getText(0));
 				parameterMap.put(NetworkManagerConstants.PARAMETERS.HOSTNAME, item.getText(1));
-				parameterMap.put(NetworkManagerConstants.PARAMETERS.IS_ACTIVE, item.getText(2));
+				parameterMap.put(NetworkManagerConstants.PARAMETERS.IS_ACTIVE, item.getText(2).equals(Messages.getString("YES")) ? true : false);
 				
 				TaskRequest task = new TaskRequest(new ArrayList<String>(getDnSet()), DNType.AHENK, NetworkManagerConstants.PLUGIN_NAME,
 						NetworkManagerConstants.PLUGIN_VERSION, "DELETE_HOST", parameterMap, null, null, new Date());
@@ -607,7 +613,7 @@ public class NetworkManagerTaskDialog extends DefaultTaskDialog {
 				
 				Map<String, Object> parameterMap = new HashMap<String, Object>();
 				parameterMap.put(NetworkManagerConstants.PARAMETERS.IP, item.getText(0));
-				parameterMap.put(NetworkManagerConstants.PARAMETERS.IS_ACTIVE, item.getText(1));
+				parameterMap.put(NetworkManagerConstants.PARAMETERS.IS_ACTIVE, item.getText(1).equals(Messages.getString("YES")) ? true : false);
 				parameterMap.put(NetworkManagerConstants.PARAMETERS.NAME, item.getText(2));
 				parameterMap.put(NetworkManagerConstants.PARAMETERS.TYPE, item.getText(3));
 				
