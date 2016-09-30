@@ -125,6 +125,10 @@ public class NetworkManagerTaskDialog extends DefaultTaskDialog {
 											if (!line.isEmpty()) {
 												String[] hostnames = line.split("\\s+");
 												
+												for (int i = 0; i < hostnames.length; i++) {
+													hostnames[i] = hostnames[i].trim();
+												}
+												
 												if (hostnames[0].matches("(\\d+\\.?)+")) {
 													TableItem item = new TableItem(viewerHosts.getTable(), SWT.NONE);
 												    item.setText(0, hostnames[0]);
@@ -139,6 +143,12 @@ public class NetworkManagerTaskDialog extends DefaultTaskDialog {
 													
 												    item.setText(0, sb.toString());
 												    item.setText(1, hostnames[1]);
+												    item.setText(2, Messages.getString("NO"));
+												}
+												else if (hostnames.length == 3 && hostnames[0].matches("#") && hostnames[1].matches("(\\d+\\.?)+")) {
+													TableItem item = new TableItem(viewerHosts.getTable(), SWT.NONE);
+													item.setText(0, hostnames[1]);
+												    item.setText(1, hostnames[2]);
 												    item.setText(2, Messages.getString("NO"));
 												}
 											}
