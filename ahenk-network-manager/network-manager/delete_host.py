@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*-
 # Author:Mine DOGAN <mine.dogan@agem.com.tr>
 
+import re
+
 from base.plugin.abstract_plugin import AbstractPlugin
 
 class DeleteHost(AbstractPlugin):
@@ -27,6 +29,10 @@ class DeleteHost(AbstractPlugin):
             f = open(self.hosts_file, "w")
 
             for line in lines:
+                line = str(line).strip(" ")
+                # to remove multiple spaces
+                line = re.sub(' +', ' ', line)
+
                 if self.is_active is True:
                     if line != '{0} {1}\n'.format(self.ip, self.hostname):
                         self.logger.debug(
@@ -36,7 +42,7 @@ class DeleteHost(AbstractPlugin):
                         self.logger.debug(
                             '[NETWORK-MANAGER - DELETE_HOST] Line has been deleted from hosts file. Line: {}'.format(line))
                 else:
-                    if line != '#{0} {1}\n'.format(self.ip, self.hostname):
+                    if line != '#{0} {1}\n'.format(self.ip, self.hostname) and line != '# {0} {1}\n'.format(self.ip, self.hostname):
                         self.logger.debug(
                             '[NETWORK-MANAGER - DELETE_HOST] Writing a line to hosts file... Line: {}'.format(line))
                         f.write(line)

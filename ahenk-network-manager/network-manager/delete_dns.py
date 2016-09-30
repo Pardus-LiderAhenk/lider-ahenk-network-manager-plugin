@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*-
 # Author:Mine DOGAN <mine.dogan@agem.com.tr>
 
+import re
+
 from base.plugin.abstract_plugin import AbstractPlugin
 
 class DeleteDNS(AbstractPlugin):
@@ -26,6 +28,10 @@ class DeleteDNS(AbstractPlugin):
             f = open(self.dns_file, "w")
 
             for line in lines:
+               line = str(line).strip(" ")
+                # to remove multiple spaces
+               line = re.sub(' +', ' ', line)
+
                if self.is_active is True:
                    if line != 'nameserver {}\n'.format(self.ip):
                        self.logger.debug(
@@ -34,7 +40,7 @@ class DeleteDNS(AbstractPlugin):
                    else:
                        self.logger.debug('[NETWORK-MANAGER - DELETE_DNS] Line has been deleted from dns file. Line: {}'.format(line))
                else:
-                   if line != '#nameserver {}\n'.format(self.ip):
+                   if line != '#nameserver {}\n'.format(self.ip) and line != '# nameserver {}\n'.format(self.ip):
                        self.logger.debug(
                            '[NETWORK-MANAGER - DELETE_DNS] Writing a line to dns file... Line: {}'.format(line))
                        f.write(line)

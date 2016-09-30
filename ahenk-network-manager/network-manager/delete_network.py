@@ -3,6 +3,7 @@
 # Author:Mine DOGAN <mine.dogan@agem.com.tr>
 
 import fileinput
+import re
 
 from base.plugin.abstract_plugin import AbstractPlugin
 
@@ -33,6 +34,10 @@ class DeleteNetwork(AbstractPlugin):
         try:
             counter = 0
             for line in fileinput.input(self.nic_file, inplace=True):
+                line = str(line).strip(" ")
+                # to remove multiple spaces
+                line = re.sub(' +', ' ', line)
+
                 if not counter:
                     if self.type == 'static':
                         if self.is_active is True:

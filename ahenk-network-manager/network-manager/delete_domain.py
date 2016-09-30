@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*-
 # Author:Mine DOGAN <mine.dogan@agem.com.tr>
 
+import re
+
 from base.plugin.abstract_plugin import AbstractPlugin
 
 class DeleteDomain(AbstractPlugin):
@@ -24,6 +26,10 @@ class DeleteDomain(AbstractPlugin):
             f = open(self.dns_file, "w")
 
             for line in lines:
+                line = str(line).strip(" ")
+                # to remove multiple spaces
+                line = re.sub(' +', ' ', line)
+
                 if line != 'domain {}\n'.format(self.domain) and line != 'search {}\n'.format(self.domain):
                     self.logger.debug(
                         '[NETWORK-MANAGER - DELETE_DOMAIN] Writing a line to dns file... Line: {}'.format(line))
