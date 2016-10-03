@@ -79,7 +79,6 @@
 
 	<modules>
 		<module>lider-network-manager</module>
-		<module>lider-network-manager-db</module>
 		<module>lider-network-manager-feature</module>
 		<module>lider-console-network-manager</module>
 		<module>lider-console-network-manager-feature</module>
