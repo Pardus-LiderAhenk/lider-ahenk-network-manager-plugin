@@ -4,6 +4,7 @@
 
 from base.plugin.abstract_plugin import AbstractPlugin
 
+
 class AddHost(AbstractPlugin):
     def __init__(self, task, context):
         super(AddHost, self).__init__()
@@ -18,29 +19,30 @@ class AddHost(AbstractPlugin):
         self.hostname = self.task['hostname']
         self.is_active = self.task['is_active']
 
-        self.logger.debug('[NETWORK-MANAGER - ADD_HOST] Parameters were initialized.')
+        self.logger.debug('Parameters were initialized.')
 
     def handle_task(self):
         try:
             if self.is_active is True:
                 content = '{0} {1}\n'.format(self.ip, self.hostname)
-                self.logger.debug('[NETWORK-MANAGER - ADD_HOST] Created active host content.')
+                self.logger.debug('Created active host content.')
             else:
                 content = '#{0} {1}\n'.format(self.ip, self.hostname)
-                self.logger.debug('[NETWORK-MANAGER - ADD_HOST] Created passive host content.')
+                self.logger.debug('Created passive host content.')
 
-            self.logger.debug('[NETWORK-MANAGER - ADD_HOST] Writing to file...')
+            self.logger.debug('Writing to file...')
             self.write_file(self.hosts_file, content, 'a')
 
-            self.logger.info('[NETWORK-MANAGER - ADD_HOST] NETWORK-MANAGER - ADD_HOST task is handled successfully.')
+            self.logger.info('NETWORK-MANAGER - ADD_HOST task is handled successfully.')
             self.context.create_response(code=self.message_code.TASK_PROCESSED.value,
                                          message='Sunucu bilgisi başarıyla eklendi.')
 
         except Exception as e:
             self.logger.error(
-                '[NETWORK-MANAGER - ADD_HOST] A problem occured while handling NETWORK-MANAGER task: {0}'.format(str(e)))
+                'A problem occured while handling NETWORK-MANAGER task: {0}'.format(str(e)))
             self.context.create_response(code=self.message_code.TASK_ERROR.value,
                                          message='NETWORK-MANAGER görevi uygulanırken bir hata oluştu.')
+
 
 def handle_task(task, context):
     host = AddHost(task, context)

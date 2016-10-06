@@ -4,6 +4,7 @@
 
 from base.plugin.abstract_plugin import AbstractPlugin
 
+
 class AddDNS(AbstractPlugin):
     def __init__(self, task, context):
         super(AddDNS, self).__init__()
@@ -17,29 +18,30 @@ class AddDNS(AbstractPlugin):
         self.ip = self.task['ip']
         self.is_active = self.task['is_active']
 
-        self.logger.debug('[NETWORK-MANAGER - ADD_DNS] Parameters were initialized.')
+        self.logger.debug('Parameters were initialized.')
 
     def handle_task(self):
         try:
             if self.is_active is True:
                 content = 'nameserver {}\n'.format(self.ip)
-                self.logger.debug('[NETWORK-MANAGER - ADD_DNS] Created active dns content.')
+                self.logger.debug('Created active dns content.')
             else:
                 content = '#nameserver {}\n'.format(self.ip)
-                self.logger.debug('[NETWORK-MANAGER - ADD_DNS] Created passive dns content.')
+                self.logger.debug('Created passive dns content.')
 
-            self.logger.debug('[NETWORK-MANAGER - ADD_DNS] Writing to file...')
+            self.logger.debug('Writing to file...')
             self.write_file(self.dns_file, content, 'a')
 
-            self.logger.info('[NETWORK-MANAGER - ADD_DNS] NETWORK-MANAGER - ADD_DNS task is handled successfully.')
+            self.logger.info('NETWORK-MANAGER - ADD_DNS task is handled successfully.')
             self.context.create_response(code=self.message_code.TASK_PROCESSED.value,
                                          message='DNS bilgisi başarıyla eklendi.')
 
         except Exception as e:
             self.logger.error(
-                '[NETWORK-MANAGER - ADD_DNS] A problem occured while handling NETWORK-MANAGER task: {0}'.format(str(e)))
+                'A problem occured while handling NETWORK-MANAGER task: {0}'.format(str(e)))
             self.context.create_response(code=self.message_code.TASK_ERROR.value,
                                          message='NETWORK-MANAGER görevi uygulanırken bir hata oluştu.')
+
 
 def handle_task(task, context):
     dns = AddDNS(task, context)

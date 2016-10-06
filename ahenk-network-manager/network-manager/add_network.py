@@ -4,6 +4,7 @@
 
 from base.plugin.abstract_plugin import AbstractPlugin
 
+
 class AddNetwork(AbstractPlugin):
     def __init__(self, task, context):
         super(AddNetwork, self).__init__()
@@ -25,40 +26,47 @@ class AddNetwork(AbstractPlugin):
 
         self.content = ''
 
-        self.logger.debug('[NETWORK-MANAGER - ADD_NETWORK] Parameters were initialized.')
+        self.logger.debug('Parameters were initialized.')
 
     def handle_task(self):
         try:
             if self.type == 'STATIC':
                 if self.is_active is True:
-                    self.content = 'iface {0} inet static\n address {1}\n netmask {2}\n gateway {3}\n'.format(self.name, self.ip, self.netmask, self.gateway)
+                    self.content = 'iface {0} inet static\n address {1}\n netmask {2}\n gateway {3}\n'.format(self.name,
+                                                                                                              self.ip,
+                                                                                                              self.netmask,
+                                                                                                              self.gateway)
                 else:
-                    self.content = 'iface {0} inet static\n#address {1}\n#netmask {2}\n#gateway {3}\n'.format(self.name, self.ip, self.netmask, self.gateway)
+                    self.content = 'iface {0} inet static\n#address {1}\n#netmask {2}\n#gateway {3}\n'.format(self.name,
+                                                                                                              self.ip,
+                                                                                                              self.netmask,
+                                                                                                              self.gateway)
 
-                self.logger.debug('[NETWORK-MANAGER - ADD_NETWORK] Created content for STATIC type.')
+                self.logger.debug('Created content for STATIC type.')
             elif self.type == 'DHCP':
                 self.content = 'iface {} inet dhcp\n'.format(self.name)
-                self.logger.debug('[NETWORK-MANAGER - ADD_NETWORK] Created content for DHCP type.')
+                self.logger.debug('Created content for DHCP type.')
             elif self.type == 'LOOPBACK':
                 self.content = 'iface {} inet loopback\n'.format(self.name)
-                self.logger.debug('[NETWORK-MANAGER - ADD_NETWORK] Created content for LOOPBACK type.')
+                self.logger.debug('Created content for LOOPBACK type.')
 
             if self.is_active is False:
-                self.logger.debug('[NETWORK-MANAGER - ADD_NETWORK] Network interface is not active.')
+                self.logger.debug('Network interface is not active.')
                 self.content = '#{}'.format(self.content)
 
-            self.logger.debug('[NETWORK-MANAGER - ADD_NETWORK] Writing to file...')
+            self.logger.debug('Writing to file...')
             self.write_file(self.nic_file, self.content, 'a')
 
-            self.logger.info('[NETWORK-MANAGER - ADD_NETWORK] NETWORK-MANAGER - ADD_NETWORK task is handled successfully.')
+            self.logger.info('NETWORK-MANAGER - ADD_NETWORK task is handled successfully.')
             self.context.create_response(code=self.message_code.TASK_PROCESSED.value,
                                          message='Yeni ağ arayüzü başarıyla eklendi.')
 
         except Exception as e:
             self.logger.error(
-                '[NETWORK-MANAGER - ADD_NETWORK] A problem occured while handling NETWORK-MANAGER task: {0}'.format(str(e)))
+                'A problem occured while handling NETWORK-MANAGER task: {0}'.format(str(e)))
             self.context.create_response(code=self.message_code.TASK_ERROR.value,
                                          message='NETWORK-MANAGER görevi uygulanırken bir hata oluştu.')
+
 
 def handle_task(task, context):
     network = AddNetwork(task, context)

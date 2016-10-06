@@ -6,6 +6,7 @@ import re
 
 from base.plugin.abstract_plugin import AbstractPlugin
 
+
 class DeleteHost(AbstractPlugin):
     def __init__(self, task, context):
         super(DeleteHost, self).__init__()
@@ -20,7 +21,7 @@ class DeleteHost(AbstractPlugin):
         self.hostname = self.task['hostname']
         self.is_active = self.task['is_active']
 
-        self.logger.debug('[NETWORK-MANAGER - DELETE_HOST] Parameters were initialized.')
+        self.logger.debug('Parameters were initialized.')
 
     def handle_task(self):
         try:
@@ -36,31 +37,33 @@ class DeleteHost(AbstractPlugin):
                 if self.is_active is True:
                     if line != '{0} {1}\n'.format(self.ip, self.hostname):
                         self.logger.debug(
-                            '[NETWORK-MANAGER - DELETE_HOST] Writing a line to hosts file... Line: {}'.format(line))
+                            'Writing a line to hosts file... Line: {}'.format(line))
                         f.write(line)
                     else:
                         self.logger.debug(
-                            '[NETWORK-MANAGER - DELETE_HOST] Line has been deleted from hosts file. Line: {}'.format(line))
+                            'Line has been deleted from hosts file. Line: {}'.format(line))
                 else:
-                    if line != '#{0} {1}\n'.format(self.ip, self.hostname) and line != '# {0} {1}\n'.format(self.ip, self.hostname):
+                    if line != '#{0} {1}\n'.format(self.ip, self.hostname) and line != '# {0} {1}\n'.format(self.ip,
+                                                                                                            self.hostname):
                         self.logger.debug(
-                            '[NETWORK-MANAGER - DELETE_HOST] Writing a line to hosts file... Line: {}'.format(line))
+                            'Writing a line to hosts file... Line: {}'.format(line))
                         f.write(line)
                     else:
                         self.logger.debug(
-                            '[NETWORK-MANAGER - DELETE_HOST] Line has been deleted from hosts file. Line: {}'.format(line))
+                            'Line has been deleted from hosts file. Line: {}'.format(line))
 
             f.close()
 
-            self.logger.info('[NETWORK-MANAGER - DELETE_HOST] NETWORK-MANAGER - DELETE_HOST task is handled successfully.')
+            self.logger.info('NETWORK-MANAGER - DELETE_HOST task is handled successfully.')
             self.context.create_response(code=self.message_code.TASK_PROCESSED.value,
                                          message='Sunucu bilgisi başarıyla silindi.')
 
         except Exception as e:
             self.logger.error(
-                '[NETWORK-MANAGER - DELETE_HOST] A problem occured while handling NETWORK-MANAGER task: {0}'.format(str(e)))
+                'A problem occured while handling NETWORK-MANAGER task: {0}'.format(str(e)))
             self.context.create_response(code=self.message_code.TASK_ERROR.value,
                                          message='NETWORK-MANAGER görevi uygulanırken bir hata oluştu.')
+
 
 def handle_task(task, context):
     host = DeleteHost(task, context)

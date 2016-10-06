@@ -7,6 +7,7 @@ import re
 
 from base.plugin.abstract_plugin import AbstractPlugin
 
+
 class DeleteNetwork(AbstractPlugin):
     def __init__(self, task, context):
         super(DeleteNetwork, self).__init__()
@@ -28,7 +29,7 @@ class DeleteNetwork(AbstractPlugin):
 
         self.content = ''
 
-        self.logger.debug('[NETWORK-MANAGER - DELETE_NETWORK] Parameters were initialized.')
+        self.logger.debug('Parameters were initialized.')
 
     def handle_task(self):
         try:
@@ -70,15 +71,16 @@ class DeleteNetwork(AbstractPlugin):
                 else:
                     counter -= 1
 
-            self.logger.info('[NETWORK-MANAGER - DELETE_NETWORK] NETWORK-MANAGER - DELETE_NETWORK task is handled successfully.')
+            self.logger.info('NETWORK-MANAGER - DELETE_NETWORK task is handled successfully.')
             self.context.create_response(code=self.message_code.TASK_PROCESSED.value,
                                          message='Ağ arayüzü başarıyla silindi.')
 
         except Exception as e:
             self.logger.error(
-                '[NETWORK-MANAGER - DELETE_NETWORK] A problem occured while handling NETWORK-MANAGER task: {0}'.format(str(e)))
+                'A problem occured while handling NETWORK-MANAGER task: {0}'.format(str(e)))
             self.context.create_response(code=self.message_code.TASK_ERROR.value,
                                          message='NETWORK-MANAGER görevi uygulanırken bir hata oluştu.')
+
 
 def handle_task(task, context):
     network = DeleteNetwork(task, context)

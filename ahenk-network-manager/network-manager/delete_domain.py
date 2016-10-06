@@ -6,6 +6,7 @@ import re
 
 from base.plugin.abstract_plugin import AbstractPlugin
 
+
 class DeleteDomain(AbstractPlugin):
     def __init__(self, task, context):
         super(DeleteDomain, self).__init__()
@@ -18,7 +19,7 @@ class DeleteDomain(AbstractPlugin):
 
         self.domain = self.task['domain']
 
-        self.logger.debug('[NETWORK-MANAGER - DELETE_DOMAIN] Parameters were initialized.')
+        self.logger.debug('Parameters were initialized.')
 
     def handle_task(self):
         try:
@@ -32,23 +33,24 @@ class DeleteDomain(AbstractPlugin):
 
                 if line != 'domain {}\n'.format(self.domain) and line != 'search {}\n'.format(self.domain):
                     self.logger.debug(
-                        '[NETWORK-MANAGER - DELETE_DOMAIN] Writing a line to dns file... Line: {}'.format(line))
+                        'Writing a line to dns file... Line: {}'.format(line))
                     f.write(line)
                 else:
                     self.logger.debug(
-                        '[NETWORK-MANAGER - DELETE_DOMAIN] Line has been deleted from dns file. Line: {}'.format(line))
+                        'Line has been deleted from dns file. Line: {}'.format(line))
 
             f.close()
 
-            self.logger.info('[NETWORK-MANAGER - DELETE_DOMAIN] NETWORK-MANAGER - DELETE_DOMAIN task is handled successfully.')
+            self.logger.info('NETWORK-MANAGER - DELETE_DOMAIN task is handled successfully.')
             self.context.create_response(code=self.message_code.TASK_PROCESSED.value,
                                          message='Alan adı bilgisi başarıyla silindi.')
 
         except Exception as e:
             self.logger.error(
-                '[NETWORK-MANAGER - DELETE_DOMAIN] A problem occured while handling NETWORK-MANAGER task: {0}'.format(str(e)))
+                'A problem occured while handling NETWORK-MANAGER task: {0}'.format(str(e)))
             self.context.create_response(code=self.message_code.TASK_ERROR.value,
                                          message='NETWORK-MANAGER görevi uygulanırken bir hata oluştu.')
+
 
 def handle_task(task, context):
     domain = DeleteDomain(task, context)
