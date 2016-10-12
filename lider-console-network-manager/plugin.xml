@@ -32,9 +32,10 @@
       		allPopups="false"
             locationURI="popup:tr.org.liderahenk.liderconsole.menus.ApplyTask?after=additions">
  				<command
-                  commandId="tr.org.liderahenk.liderconsole.commands.NetworkManagerTask"
-                  id="tr.org.liderahenk.liderconsole.commands.NetworkManagerTask"
-                  tooltip="%command.task">
+           commandId="tr.org.liderahenk.liderconsole.commands.NetworkManagerTask"
+           icon="icons/16/network.png"
+           id="tr.org.liderahenk.liderconsole.commands.NetworkManagerTask"
+           tooltip="%command.task">
 		        <visibleWhen>
 		           <and>
 		              <with
