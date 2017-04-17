@@ -75,4 +75,14 @@
   	<task code="get_network_information" label="%command.get.network.information.task" />
 	<plugin name="network-manager" label="%plugin.label" />
   </extension>  
+  
+  
+   	<!-- Add extension point contribution for "task execution" dialogs -->
+	<extension
+  		point="tr.org.liderahenk.liderconsole.core.taskmenu">
+  		<taskItem label="%command.task" pluginName="network-manager" pluginVersion="1.0.0" taskCommandId="tr.org.liderahenk.liderconsole.commands.NetworkManagerTask" />
+  	</extension>
+  	
+  
+  
 </plugin>
