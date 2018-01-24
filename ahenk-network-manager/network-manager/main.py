@@ -4,7 +4,7 @@
 def info():
     inf = dict()
     inf['name'] = 'network-manager'
-    inf['version'] = '1.0.0'
+    inf['version'] = '1.1'
     inf['support'] = 'debian'
     inf['description'] = 'Network-Manager plugin provides to managing host, domain, dns and other network settings.'
     inf['task'] = True

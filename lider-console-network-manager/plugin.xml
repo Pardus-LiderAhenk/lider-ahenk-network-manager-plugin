@@ -81,7 +81,7 @@
 	<extension
   		point="tr.org.liderahenk.liderconsole.core.taskmenu">
   		<taskItem label="%command.task" pluginName="network-manager" 
-  		pluginVersion="1.0.0" taskCommandId="tr.org.liderahenk.liderconsole.commands.NetworkManagerTask" 
+  		pluginVersion="1.1" taskCommandId="tr.org.liderahenk.liderconsole.commands.NetworkManagerTask" 
   		description="Makine üzerindeki ağ ayarlarını düzenlemeyi sağlayan eklentidir.&#xA;Ağ ayarlarını düzenlemek için tıklayınız.." 
   		imagePath="network.png"/>
   	</extension>
