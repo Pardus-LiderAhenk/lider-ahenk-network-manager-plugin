@@ -15,6 +15,7 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TableViewerColumn;
+import org.eclipse.jface.viewers.TreeSelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
@@ -64,6 +65,7 @@ public class NetworkManagerTaskDialog extends DefaultTaskDialog {
 	private TableViewer viewerDNS;
 	private TableViewer viewerDomain;
 	private TableViewer viewerHosts;
+	private TableViewer viewerPorts;
 	private TableViewer viewerSettings;
 	
 	private Text txtInterfaces;
@@ -222,6 +224,32 @@ public class NetworkManagerTaskDialog extends DefaultTaskDialog {
 											}
 										}
 									}
+									if (responseData.containsKey("port")) {
+										String port = (String) responseData.get("port");
+										
+										String[] lines = port.split("\n");
+										
+										for (String line : lines) {
+											String[] portInfo = line.split(" ");
+											TableItem item = new TableItem(viewerPorts.getTable(), SWT.NONE);
+										    item.setText(0, portInfo[0]);
+										    item.setText(1, portInfo[1]);
+										    item.setText(2, portInfo[2]);
+										    if(portInfo[3].equals("Allowed")) {
+										    	item.setText(3, Messages.getString("ALLOWED"));
+										    }
+										    else {
+										    	item.setText(3, Messages.getString("BLOCKED"));
+										    }
+										    if(portInfo[4].equals("Allowed")) {
+										    	item.setText(4, Messages.getString("ALLOWED"));
+										    }
+										    else {
+										    	item.setText(4, Messages.getString("BLOCKED"));
+										    }
+										    
+										}
+									}
 									if (responseData.containsKey("machine_hostname")) {
 										String machineHostname = (String) responseData.get("machine_hostname");
 										
@@ -247,7 +275,7 @@ public class NetworkManagerTaskDialog extends DefaultTaskDialog {
 	};
 	
 	public void getData(String commandId) {
-		if (viewerDNS != null && viewerDomain != null && viewerHosts != null && viewerSettings != null) {
+		if (viewerDNS != null && viewerDomain != null && viewerHosts != null && viewerSettings != null && viewerPorts != null) {
 			viewerDNS.getTable().clearAll();
 			viewerDNS.getTable().setItemCount(0);
 			
@@ -256,6 +284,9 @@ public class NetworkManagerTaskDialog extends DefaultTaskDialog {
 			
 			viewerHosts.getTable().clearAll();
 			viewerHosts.getTable().setItemCount(0);
+			
+			viewerPorts.getTable().clearAll();
+			viewerPorts.getTable().setItemCount(0);
 			
 			viewerSettings.getTable().clearAll();
 			viewerSettings.getTable().setItemCount(0);
@@ -285,6 +316,7 @@ public class NetworkManagerTaskDialog extends DefaultTaskDialog {
 		createHostTab();
 		createGeneralTab();
 		createSettingsTab();
+		createPortTab();
 		
 		return null;
 	}
@@ -385,6 +417,7 @@ public class NetworkManagerTaskDialog extends DefaultTaskDialog {
 		createColumns(group, viewerDNS);
 		
 		Table table = viewerDNS.getTable();
+		
 	    table.setHeaderVisible(true);
 	    table.setLinesVisible(true);
 	    
@@ -544,6 +577,122 @@ public class NetworkManagerTaskDialog extends DefaultTaskDialog {
 		
 	}
 	
+	public void createPortTab() {
+		
+		TabItem tabItem = new TabItem(tabFolder, SWT.NONE);
+		tabItem.setText(Messages.getString("PORTS"));
+		
+		Group group = new Group(tabFolder, SWT.NONE);
+		group.setLayout(new GridLayout(2, false));
+		
+		Button btnAllow = new Button(group, SWT.PUSH);
+		btnAllow.setText(Messages.getString("ALLOW"));
+		btnAllow.setImage(new Image(Display.getCurrent(), this.getClass().getResourceAsStream("/icons/16/add.png")));
+		btnAllow.addSelectionListener(new SelectionListener() {
+			
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				TableItem item = null;
+				Boolean hasAllowedItem = false;
+				String ports = "";
+				int [] indices =  viewerPorts.getTable().getSelectionIndices();
+				
+				for(int i = 0; i< indices.length;i++) {
+					item = viewerPorts.getTable().getItem(indices[i]);
+					//if port is already allowed dont add to ports
+					if(!item.getText(3).equals(Messages.getString("ALLOWED")) || !item.getText(4).equals(Messages.getString("ALLOWED"))) {
+						hasAllowedItem = true;
+						ports += item.getText(2) + " ";
+					}
+				}
+				Map<String, Object> parameterMap = new HashMap<String, Object>();
+				parameterMap.put(NetworkManagerConstants.PARAMETERS.PORTS, ports);
+				
+				if(hasAllowedItem) {
+					TaskRequest task = new TaskRequest(new ArrayList<String>(getDnSet()), DNType.AHENK, NetworkManagerConstants.PLUGIN_NAME,
+							NetworkManagerConstants.PLUGIN_VERSION, "ALLOW_PORT", parameterMap, null, null, new Date());
+					try {
+						TaskRestUtils.execute(task);
+					} catch (Exception e1) {
+						logger.error(e1.getMessage(), e1);
+					}
+					getData("GET_NETWORK_INFORMATION");
+				}
+			}
+			
+			@Override
+			public void widgetDefaultSelected(SelectionEvent e) {
+			}
+		});
+		
+		Button btnBlock = new Button(group, SWT.PUSH);
+		btnBlock.setText(Messages.getString("BLOCK"));
+		btnBlock.setImage(new Image(Display.getCurrent(), this.getClass().getResourceAsStream("/icons/16/delete.png")));
+		btnBlock.addSelectionListener(new SelectionListener() {
+			
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				TableItem item = null;
+				Boolean hasBlockedItem = false;
+				String ports = "";
+				int [] indices =  viewerPorts.getTable().getSelectionIndices();
+				
+				for(int i = 0; i< indices.length;i++) {
+					item = viewerPorts.getTable().getItem(indices[i]);
+					//if port is already blocked dont add to ports
+					if(!item.getText(3).equals(Messages.getString("BLOCKED")) || !item.getText(4).equals(Messages.getString("BLOCKED"))) {
+						hasBlockedItem = true;
+						ports += item.getText(2) + " ";
+					}
+				}
+				
+				Map<String, Object> parameterMap = new HashMap<String, Object>();
+				parameterMap.put(NetworkManagerConstants.PARAMETERS.PORTS, ports.trim());
+				
+				if(hasBlockedItem) {
+					TaskRequest task = new TaskRequest(new ArrayList<String>(getDnSet()), DNType.AHENK, NetworkManagerConstants.PLUGIN_NAME,
+							NetworkManagerConstants.PLUGIN_VERSION, "BLOCK_PORT", parameterMap, null, null, new Date());
+					try {
+						TaskRestUtils.execute(task);
+					} catch (Exception e1) {
+						logger.error(e1.getMessage(), e1);
+					}
+					getData("GET_NETWORK_INFORMATION");
+				}
+			}
+			
+			@Override
+			public void widgetDefaultSelected(SelectionEvent e) {
+			}
+		});
+		
+		viewerPorts = new TableViewer(group, SWT.MULTI | SWT.H_SCROLL
+		        | SWT.V_SCROLL | SWT.FULL_SELECTION | SWT.BORDER);
+		
+		columnTitles = new ArrayList<String>();
+		columnTitles.add("SERVICE_NAME");
+		columnTitles.add("PROTOCOL");
+		columnTitles.add("PORT");
+		columnTitles.add("INPUT");
+		columnTitles.add("OUTPUT");
+		
+		
+		createColumns(group, viewerPorts);
+		
+		Table tableDomain = viewerPorts.getTable();
+	    tableDomain.setHeaderVisible(true);
+	    tableDomain.setLinesVisible(true);
+	    
+	    // define layout for the viewer
+	    GridData gridData = new GridData(SWT.FILL, SWT.FILL, true, true, 2, 1);
+	    gridData.verticalAlignment = SWT.FILL;
+	    gridData.horizontalAlignment = SWT.FILL;
+	    viewerPorts.getControl().setLayoutData(gridData);
+	    
+	    tabItem.setControl(group);
+		
+	}
+	
 	public void createGeneralTab() {
 		
 		TabItem tabItem = new TabItem(tabFolder, SWT.NONE);
@@ -670,7 +819,7 @@ public class NetworkManagerTaskDialog extends DefaultTaskDialog {
 	
 	// create the columns for the table
 	private void createColumns(final Composite parent, final TableViewer viewer) {
-		int[] bounds = { 120, 120, 120, 120 };
+		int[] bounds = { 120, 120, 120, 120, 120 };
 
 		for (int i = 0; i < columnTitles.size(); i++) {
 			createTableViewerColumn(viewer, Messages.getString(columnTitles.get(i)), bounds[i], i);

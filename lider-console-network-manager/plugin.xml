@@ -73,6 +73,8 @@
   	<task code="delete_host" label="%command.delete.host.task" />
   	<task code="delete_network" label="%command.delete.network.task" />
   	<task code="get_network_information" label="%command.get.network.information.task" />
+  	<task code="allow_port" label="%command.allow.port" />
+  	<task code="block_port" label="%command.block.port" />
 	<plugin name="network-manager" label="%plugin.label" />
   </extension>  
   
